@@ -1154,7 +1154,7 @@ void LevelRenderer::DrawBlockEditor(EditorState& state)
     ImGui::EndChild();
 }
 
-// Collusions
+// Collision
 void LevelRenderer::DrawTileBehaviorEditor(EditorState& state)
 {
     if (!state.session.IsLoaded()) {
@@ -1365,7 +1365,7 @@ void LevelRenderer::DrawTileBehaviorEditor(EditorState& state)
     }
     drawList->PopClipRect();
    
-    ImGui::EndChild();  // end tile collusion editing
+    ImGui::EndChild();  // end tile collision editing
 }  
 
 // Functions

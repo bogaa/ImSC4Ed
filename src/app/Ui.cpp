@@ -2699,7 +2699,7 @@ static void DrawTools(EditorState& state, HWND hwnd, ID3D11Device* device, const
             state.levelRenderer.DrawBlockEditor(state);
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Collusion", nullptr, toolFlags(3))) {
+        if (ImGui::BeginTabItem("Collision", nullptr, toolFlags(3))) {
             if (!state.restoreToolTab || restoredToolTab == 3) {
                 state.activeToolTab = 3;
                 state.restoreToolTab = false;
@@ -2790,19 +2790,19 @@ static void DrawHelpView(EditorState& state)
         return;
     }
 
-    ImGui::TextUnformatted("SC4Ed ImGui Help");
+    ImGui::TextUnformatted("ImSC4Ed Help");
     ImGui::TextWrapped("This view explains the main editor windows, common workflows, mouse actions, and keyboard shortcuts.");
     ImGui::Separator();
 
     if (ImGui::CollapsingHeader("Getting Started", ImGuiTreeNodeFlags_DefaultOpen)) {
         HelpBullets({
             "Use File > Open ROM... to load a Super Castlevania IV ROM.",
-            "Use Navigator to choose the level and checkpoint, then inspect the result in Level View.",
-            "Most editing tools are in Tools. Choose a tab there, then interact with Level View or the relevant tile/sprite preview.",
+            "Use File > ROM Expander... to unlock most editing features.",
+            "Use Navigator to view levels in the level View.",
+            "Edit a value in a slider, shift-click it or drag the slider.",
             "The Selection tab gives you extra options when you click on events like. Exits, CamLock, breakable walls etc.",
-            "Use File > Save or Ctrl+S after editing. Save As writes the current ROM to a different path.",
-            "Use View > Reset Default Layout if panels are missing or docked somewhere awkward."
-            "When you see a slider but had like to type. Use CRTL + Mouseclick."
+            "Use Tools > Draw Scene to select/paint with the mouse. Events to drag and drop them into the level.",
+            "Use View > Reset Default Layout if panels are off. You have undo/redo capabilities but save and make regular backups of the ROM."
         });
     }
 
@@ -2832,12 +2832,12 @@ static void DrawHelpView(EditorState& state)
             ImGui::TableHeadersRow();
             HelpRow("Level View", "Main rendered level canvas. Use it to inspect levels, select and drag events, paint blocks, and preview collision/events/grid overlays.");
             HelpRow("ROM", "Shows the loaded file path, ROM size, header status, checksum, and current level dimensions.");
-            HelpRow("Navigator", "Changes level, checkpoint, zoom, selected paint block, and visibility overlays.");
+            HelpRow("Navigator", "Changes level, zoom, selected paint block, and visibility overlays.");
             HelpRow("Palette", "Shows all 16 palettes. Click a swatch to select it, then use the color picker to write color changes back to the ROM.");
-            HelpRow("Tools", "Holds the editing tabs: events, tiles, blocks, behavior, HUD, sprites, and scratch image import/conversion.");
+            HelpRow("Tools", "Holds the editing tabs for events, draw scene, tile32, collision, HUD, sprites, scratch board, music and instruments.");
             HelpRow("Global Properties", "ROM-wide properties and values exposed by the property editor.");
-            HelpRow("Level Properties", "Current-level properties exposed by the property editor.");
-            HelpRow("Selection", "Details and editable fields for the currently selected event or object.");
+            HelpRow("Level Properties", "Current-level properties exposed by the property editor. Select a checkpoint and edit its properties.");
+            HelpRow("Selection", "Event properties editor");
             HelpRow("Log", "Recent status messages such as loaded ROMs, saves, failed operations, and import results.");
             HelpRow("Help", "This reference view. Toggle it from View > Help or Help > Help View.");
             ImGui::EndTable();
@@ -2849,7 +2849,7 @@ static void DrawHelpView(EditorState& state)
             "Middle-click and drag pans the level.",
             "When Tools > Draw Tiles is active, left-drag paints the selected block into the level.",
             "In Draw Tiles mode, right-click samples a block. Right-drag selects a rectangular block brush from the level.",
-            "When events are visible, left-click an event to select it and left-drag to move it.",
+            "Left-click an event to select it and left-drag to move it. Shift-drag to snap to grid.",
             "Right-drag an event to clone/copy it while dragging.",
             "Drag an event template from Tools > Edit Events and drop it onto Level View to create a new event."
         });
@@ -2860,10 +2860,10 @@ static void DrawHelpView(EditorState& state)
             ImGui::TableSetupColumn("Tab", ImGuiTableColumnFlags_WidthFixed, 135.0f);
             ImGui::TableSetupColumn("What it does");
             ImGui::TableHeadersRow();
-            HelpRow("Events", "Event template palette. Browse Candles, Enemies, and Misc, then drag templates into Level View.");
-            HelpRow("Draw Scene", "Block painting mode. Select a block from the block palette, paint it into Level View, and copy/paste available tiles through the clipboard.");
-            HelpRow("Tile32", "Edit the 4x4 tile makeup of a block. Pick a block, choose tiles/palette/flip flags, and paint individual block cells.");
-            HelpRow("Collusion", "Inspect and edit tile behavior types. Expanded ROMs can write per-tile behavior directly.");
+            HelpRow("Events", "Browse events, drag templates into Level View.");
+            HelpRow("Draw Scene", "Select a tile/s by right-click/draging in Level View or left click in the tab. Left click/hold to Draw.");
+            HelpRow("Tile32", "Edit the 4x4 tile makeup of a block. Copy/Paste for block options or select tile for induvidual edit.");
+            HelpRow("Collision", "Edit tile behavior.");
             HelpRow("HUD", "Edit HUD tile items and positions with a preview canvas and item list.");
             HelpRow("Sprites", "Edit sprite/tile graphics and palettes for global or level-specific sprite data.");
             HelpRow("Scratch Board", "Drop or import PNG artwork, choose target palettes and a starting tile, or import image data as level/background art.");
@@ -2881,7 +2881,7 @@ static void DrawHelpView(EditorState& state)
             HelpRow("Open ROM...", "Loads a SNES ROM file into the editor.");
             HelpRow("Save / Save As...", "Writes current ROM edits to disk. Save As chooses a new output path.");
             HelpRow("Export BPS Patch...", "Creates a BPS patch from an original unmodified ROM and the current edited ROM in memory.");
-            HelpRow("ROM Expander...", "Expands the loaded ROM so editors that need extra editable tables can write their data.");
+            HelpRow("ROM Expander...", "Expands the loaded ROM and editing capabilities.");
             HelpRow("Show Background", "Switches the rendered level layer between foreground and background where supported.");
             HelpRow("Show Collision", "Draws collision information on top of the foreground view.");
             HelpRow("Show Events", "Shows event markers and enables event selection/dragging.");

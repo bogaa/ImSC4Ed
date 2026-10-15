@@ -60,8 +60,11 @@ namespace {
     static constexpr unsigned EVENT_HITBOX_BASE = 0x81AB00;
     static constexpr unsigned EVENT_HEALTH_BASE = 0x81AC00;
     static constexpr unsigned EVENT_HIT_ATTRIBUTE_BASE = 0x81AD00;  // 01 hurt, 04 whip hitable, 08 collect able also needs bit 01 set, 10 ??, 20 ??, 40 rossery, 80 noDespawn 
-    static constexpr unsigned EVENT_DEATH_ANIMATION_BASE = 0x81AE00;
-    static constexpr unsigned EVENT_DEATH_MOVBITS_BASE = 0x81AE80;
+    static constexpr unsigned EVENT_SCORE = 0x81AF80;
+    static constexpr unsigned EVENT_DEATH_ID = 0x81AE00; 
+    static constexpr unsigned EVENT_DEATH_STATE = 0x81AE80;
+    static constexpr unsigned EVENT_HURT_SFX = 0x81B080;
+    static constexpr unsigned EVENT_DEATH_SFX = 0x81B100;
     static constexpr unsigned EVENT_DAMAGE_BASE = 0x81AF00;
     static constexpr unsigned EVENT_SLOT_SIZE = 0x81AA80;
     static constexpr unsigned RING_CONVEYOR_X = 0x81FCBE;
@@ -432,6 +435,35 @@ namespace {
         }
 
         ImGui::PopID();
+        ImGui::EndDisabled();
+    }
+
+    static void DrawNamedNumberPropertyCombo(EditorState& state, const char* label, int byteCount, const std::vector<unsigned>& addresses, const std::vector<unsigned>& values, const std::vector<std::string>& items, bool enabled = true)
+    {
+        RomSession& session = state.session;
+        const bool canEdit = session.IsLoaded() && enabled && !addresses.empty() && addresses.front() != 0;
+        const unsigned value = canEdit ? session.ReadRom(addresses.front(), byteCount) : values.front();
+        int comboValue = 0;
+        for (int i = 0; i < static_cast<int>(values.size()); ++i) {
+            if (values[static_cast<size_t>(i)] == value) {
+                comboValue = i;
+                break;
+            }
+        }
+
+        ImGui::BeginDisabled(!canEdit);
+        if (ComboRow(label, comboValue, items)) {
+            const unsigned mask = byteCount == 1 ? 0xFFu : byteCount == 2 ? 0xFFFFu : 0xFFFFFFFFu;
+            session.WriteRomAll(addresses, byteCount, values[static_cast<size_t>(comboValue)] & mask);
+            state.levelRenderer.Invalidate();
+        }
+        if (ImGui::IsItemHovered() && !addresses.empty()) {
+            if (addresses.size() == 1) {
+                ImGui::SetTooltip("ROM address: %06X", addresses.front());
+            } else {
+                ImGui::SetTooltip("Writes %zu mirrored ROM addresses", addresses.size());
+            }
+        }
         ImGui::EndDisabled();
     }
 
@@ -1906,7 +1938,7 @@ namespace {
                     ImGui::TextDisabled("SubID 06 camaraLockTop      ");
                 }
                 if (event->eventSubId == 0x7) {
-                    ImGui::TextDisabled("SubID 07 collusionMod7RoRoo ");
+                    ImGui::TextDisabled("SubID 07 collisionMod7RoRoo ");
                 }
                 if (event->eventSubId == 0x8) {
                     ImGui::TextDisabled("SubID 08 BG Scrolling UpDown ");
@@ -1933,7 +1965,7 @@ namespace {
                     ImGui::TextDisabled("SubID 0f BGAqiuaduct02");
                 }
                 if (event->eventSubId == 0x10) {
-                    ImGui::TextDisabled("SubID 10 draw bubbles with collusion type 2");
+                    ImGui::TextDisabled("SubID 10 draw bubbles with collision type 2");
                 }
                 if (event->eventSubId == 0x11) {
                     ImGui::TextDisabled("SubID_11                    ");
@@ -2084,23 +2116,24 @@ namespace {
                 if (ImGui::CollapsingHeader("Camlock Editor", ImGuiTreeNodeFlags_DefaultOpen)) {
                     static const std::vector<std::string> cameraLocks = NumberItems(0x20);
                     g_propertyState.cameraLock = (static_cast<int>(event->eventSubId) & 0x1F);
-                  //static const std::vector<std::string> directionValues = { "1",              "2", };
-                  // static const std::vector<std::string> directionNames = { "Down Right", "Up Left"};
-                  // dirAddress 55a,55e    cmpAddress 54a,54e     dirAddressFreeCam 12a6,12a8     cmpAddressFreeCam 1298,129a  X,Y
-                  // static const std::vector<std::string> directionAddress = { "0xA0", "0xA2","0xA4", "0xA6" };
-                  // static const std::vector<std::string> directionLabels = { "Left", "Right","Bottom", "Top" };
+					static const std::vector<std::string> dirNames = { "Down Right", "Up Left" };                             // 0x0, 0x1
+					static const std::vector<std::string> dirAddress = { "Player X dir", "Player Y dir", "Cam X dir ", "Cam Y dir" };      // 0x55a, 0x55e, 0x128e, 0x12a6
+                    static const std::vector<std::string> posAddress = { "Player X pos", "Player Y pos", "Cam X pos", "Cam Y pos" };      // 0x54a, 0x54e, 0x1280, 0x1298
+                    static const std::vector<std::string> borderAddress = { "Left", "Right","Top", "Bottom" };                          // "0xA0", "0xA2","0xA4", "0xA6"  
+
                     bool disabled = true;
                     ImGui::BeginDisabled(disabled);
                     ComboRow("Camera lock", g_propertyState.cameraLock, cameraLocks);
                     ImGui::EndDisabled();
                     
                     const unsigned lockBase = 0xA58000 + 0xC * 0x20 * static_cast<unsigned>(state.level) + 0xC * static_cast<unsigned>(g_propertyState.cameraLock);
-                    DrawNumberProperty(state, "Lock direction", 2, { lockBase + 0x0 }, expanded);
-                    DrawNumberProperty(state, "Lock dir addr", 2, { lockBase + 0x2 }, expanded);
-                    DrawNumberProperty(state, "Lock cmp addr", 2, { lockBase + 0x4 }, expanded);
-                    DrawNumberProperty(state, "Lock cmp value", 2, { lockBase + 0x6 }, expanded);
-                    DrawNumberProperty(state, "Lock store value", 2, { lockBase + 0x8 }, expanded);
-                    DrawNumberProperty(state, "Lock store addr", 2, { lockBase + 0xA }, expanded);
+                    DrawNamedNumberPropertyCombo(state, "Direction", 2, { lockBase + 0x0 }, { 1, 2 }, dirNames, expanded);
+                    DrawNamedNumberPropertyCombo(state, "Direction addr", 2, { lockBase + 0x2 }, { 0x55A, 0x55E, 0x128E, 0x12A6 }, dirAddress, expanded);
+                    DrawNamedNumberPropertyCombo(state, "Compare addr", 2, { lockBase + 0x4 }, { 0x54A, 0x54E, 0x1280, 0x1298 }, posAddress, expanded);  //DrawNumberProperty(state, "Lock compare addr", 2, { lockBase + 0x4 }, expanded); 
+                    DrawNumberProperty(state, "Compare value", 2, { lockBase + 0x6 }, expanded);
+                    DrawNumberProperty(state, "New value", 2, { lockBase + 0x8 }, expanded);
+                    DrawNamedNumberPropertyCombo(state, "Border addr", 2, { lockBase + 0xA }, { 0xA0, 0xA2, 0xA4, 0xA6 }, borderAddress, expanded);      //DrawNumberProperty(state, "Lock store addr", 2, { lockBase + 0xA }, expanded);      
+                    
                 }
             }
 			
@@ -2119,8 +2152,11 @@ namespace {
                 ImGui::Separator();
 			//	ImGui::TextDisabled("Edit with cosion game might crash!");
                 DrawNumberProperty(state, "!Slot Size", 1, { EVENT_SLOT_SIZE + (event->eventId) });
-                DrawNumberProperty(state, "!Death spawnID (Flame)", 1, { EVENT_DEATH_ANIMATION_BASE + (event->eventId) }); 
-                DrawNumberProperty(state, "!Death Movement Bits", 1, { EVENT_DEATH_MOVBITS_BASE + (event->eventId) });
+                DrawNumberProperty(state, "!Death SCORE", 2, { EVENT_SCORE + (event->eventId) * 2 });
+                DrawNumberProperty(state, "!Death ID (45 and 61 = Flame)", 1, { EVENT_DEATH_ID + (event->eventId) }); 
+                DrawNumberProperty(state, "!Death STATE", 1, { EVENT_DEATH_STATE + (event->eventId) });
+                DrawNumberProperty(state, "!Death SFX", 1, { EVENT_DEATH_SFX + (event->eventId) });
+                DrawNumberProperty(state, "!Hurt SFX", 1, { EVENT_HURT_SFX + (event->eventId) });
                 ImGui::Separator();
 
             }
@@ -2262,7 +2298,7 @@ namespace {
             DrawNumberProperty(state, "Camera speed X", 2, { entranceBase + 0x1A }, expanded);
             DrawNumberProperty(state, "Camera speed Y", 2, { entranceBase + 0x1C }, expanded);
             ImGui::Separator();
-            DrawNumberProperty(state, "Camera pointer", 2, { entranceBase + 0x1E }, expanded);
+            DrawNumberProperty(state, "??", 2, { entranceBase + 0x1E }, expanded);
             ImGui::Separator();
     
             ImGui::Spacing();

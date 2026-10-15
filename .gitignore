@@ -50,7 +50,9 @@
 *.vcxproj.user
 
 # Local ROMs and emulator state
-*/asm/
+**/.bkp/
+**/.trash/
+*/asm/tools/
 *.sfc
 *.smc
 *.fig
