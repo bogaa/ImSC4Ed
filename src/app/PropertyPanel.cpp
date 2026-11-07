@@ -1968,19 +1968,19 @@ namespace {
                     ImGui::TextDisabled("SubID 10 draw bubbles with collision type 2");
                 }
                 if (event->eventSubId == 0x11) {
-                    ImGui::TextDisabled("SubID_11                    ");
+                    ImGui::TextDisabled("bubble_11");
                 }
                 if (event->eventSubId == 0x12) {
-                    ImGui::TextDisabled("SubID 12                    ");
+                    ImGui::TextDisabled("bubble_coli_12");
                 }
                 if (event->eventSubId == 0x13) {
-                    ImGui::TextDisabled("SubID 13                    ");
+                    ImGui::TextDisabled("bubble_gravity_13");
                 }
                 if (event->eventSubId == 0x14) {
-                    ImGui::TextDisabled("SubID 14_deathExitTourches  ");
+                    ImGui::TextDisabled("SubID deathExitTourches_14");
                 }
                 if (event->eventSubId == 0x15) {
-                    ImGui::TextDisabled("SubID 15_draculasSecret     ");
+                    ImGui::TextDisabled("SubID draculasSecret_15");
                 }
             }
 

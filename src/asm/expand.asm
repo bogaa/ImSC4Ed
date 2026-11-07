@@ -7,6 +7,7 @@
 ; animArray_ .. frame frame.. 
 ; animTimer_ .. time time..
 ; animDMA_ 
+; Debris 
  
     !SC4Ed = 1
     !clearCompressedData = 1

@@ -18,23 +18,23 @@
 
 
 org $80978F
-    jsl gameSetPause
+    jsl pauseCheck
     rtl 
 pad $8097C3      
 
 
 pullPC 
-  gameSetPause:
+  pauseCheck:
     LDA.B $4A                       
     ORA.B $64                       
     ORA.B b_timer_blankScreen        
-    BEQ pauseCheck                        
+    BEQ do_pauseCheck                        
     RTL           
 
-  pauseCheck:
+  do_pauseCheck:
     LDX.B b_SFX_Ptr_Repeat          
     LDA.B b_pauseFlag               
-    BNE whilePause             
+    BNE do_unpauseCheck             
     jsl whilePlayFunc
     
     LDA.B b_buttonPress,X    
@@ -46,7 +46,7 @@ pullPC
     JML.L playSFX_A         
     ; jsl setPause 
 
-  whilePause:
+  do_unpauseCheck:
     jsl whilePauseFunc
     
     LDX.B b_SFX_Ptr_Repeat          

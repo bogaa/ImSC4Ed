@@ -10,8 +10,7 @@
       r_ev_04_flip_mirror_attri = $7E0004 
       r_ev_06_health = $7E0006      
       r_ev_08_xPosSub = $7E0008        
-      r_ev_0a_xPos = $7E000A               
-      r_bg_0a_offset = $7E000A      
+      r_ev_0a_xPos = $7E000A                    
       r_ev_0c_yPosSub = $7E000C        
       r_ev_0e_yPos = $7E000E      
       r_ev_10_ID = $7E0010       
@@ -43,6 +42,7 @@
 { ; cam0 slot      
       r_bg_00_xPos_scrollOffset = $7E0000       
       r_bg_08_update = $7E0008       
+      r_bg_0a_offset = $7E000A     
       r_bg_0c = $7E000C  
       r_bg_0e = $7E000E
       r_bg_12_xSpd = $7E0012       
